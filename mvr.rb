@@ -2,8 +2,26 @@ require 'load_file.rb'
 require 'builder'
 
 class Doc
-  attr_accessor :index, :title, :author, :bibliography, :content, :terms
+  #attr_accessor :index, :title, :author, :bibliography, :content, :terms
+  
+  def initialize
+    @attributes = {}
+  end
+  
+  def method_missing(name, *args)
+    method = name.to_s.downcase
+    if method =~ /=$/
+      @attributes[method.chop] = args[0]
+    elsif method =~ /<<$/
+      method = method.chop.chop
+      @attributes[method] = "" if send(method).nil?
+      @attributes[method] << (args[0] || "")
+    else
+      @attributes[method]
+    end
+  end
 end
+
 
 file = load_file('cranfield/cran.all.1400')
 
@@ -22,49 +40,24 @@ parseo_x_regexp = /^\.([A-Z]) (\d*)|^\.([A-Z])|(^[^\.].*)/
     if $1 and $2
       @docs << @doc if @doc
       @doc = Doc.new();
-      @doc.index = $2
+      @doc.send ($1.to_s << "=").to_sym, $2
     end
-    
-    # ESTE codigo es muuuyyy repetitivo. Se puedo arreglar usando Metaprogramacion, pero no me salia :S hahaha.
-    
+        
     if $3
-      case $3
-        when 'T'
-          @temp_attr = 'T'
-        when 'A'
-          @temp_attr = 'A'
-        when 'B'
-          @temp_attr = 'B'
-        when 'W'
-          @temp_attr = 'W'
-      end         
+      @doc.send ($3.to_s << "<<").to_sym, $4
+      @doc.temp = $3.to_s.downcase
     end
     
     if $4
-      if @temp_attr == 'T'
-        @doc.title = '' if @doc.title.nil?
-        @doc.title        <<  $4 
-      end
-      if @temp_attr == 'A'
-        @doc.author = '' if @doc.author.nil?
-        @doc.author       <<  $4
-      end
-      if @temp_attr == 'B'
-        @doc.bibliography = '' if @doc.bibliography.nil?
-        @doc.bibliography <<  $4
-      end
-      if @temp_attr == 'W'
-        @doc.content      = '' if @doc.content.nil?
-        @doc.content      <<  $4        
-      end
+      @doc.send (@doc.temp + "<<").to_sym, $4
     end
     
   end  # file.gets
 end
 puts
-for doc in @docs
-  
-  doc.terms = doc.content.to_s.gsub(/\W+/, ' ').split(' ').uniq.to_s
+
+for doc in @docs  
+  doc.terms = doc.w.to_s.gsub(/\W+/, ' ').split(' ').uniq.to_s
 end
 
-puts @docs.first.terms
+print @docs.first
