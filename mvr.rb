@@ -1,7 +1,8 @@
 require 'load_file.rb'
+require 'builder'
 
 class Doc
-  attr_accessor :index, :title, :author, :bibliography, :content
+  attr_accessor :index, :title, :author, :bibliography, :content, :terms
 end
 
 file = load_file('cranfield/cran.all.1400')
@@ -14,8 +15,8 @@ parseo_x_regexp = /^\.([A-Z]) (\d*)|^\.([A-Z])|(^[^\.].*)/
 # $4 Contenido de Atributo
 
 @docs = []
-until file.eof? do
-#180.times do
+#until file.eof? do
+180.times do
   if file.gets =~ parseo_x_regexp
     
     if $1 and $2
@@ -60,5 +61,10 @@ until file.eof? do
     
   end  # file.gets
 end
-print @docs
+puts
+for doc in @docs
+  
+  doc.terms = doc.content.to_s.gsub(/\W+/, ' ').split(' ').uniq.to_s
+end
 
+puts @docs.first.terms
