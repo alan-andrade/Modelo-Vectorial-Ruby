@@ -1,6 +1,6 @@
-require 'load_file.rb'
-require 'Doc.rb'
-require 'Parser.rb'
+require 'lib/load_file.rb'
+require 'lib/Parser.rb'
+require 'lib/Doc.rb'
 
 ## Sirve para estos dos conjuntos de archivos. 'Cranfield' y 'Medline'.
 ## TODO: Probar con otras coleccionees de datos.
